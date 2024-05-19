@@ -1,0 +1,22 @@
+{
+  "short": [
+    { "verb": "jam", "noun": "port", "arg": "number" },
+    { "verb": "ping", "noun": "host", "arg": "string" },
+    { "verb": "set", "noun": "power", "arg": "number", "arg_copula": "to" },
+    { "verb": "drop", "noun": "table", "arg": "string" },
+    { "verb": "trace", "noun": "host", "arg": "string" },
+    { "verb": "copy", "noun": "file", "arg": "string", "arg_copula": "the" }
+  ],
+  "mid": [
+    { "verb": "enter", "noun": "password", "arg": "string" },
+    { "verb": "connect", "noun": "server", "arg": "string", "arg_copula": "to" },
+    { "verb": "download", "noun": "file", "arg": "string", "arg_copula": "the" },
+    { "verb": "activate", "noun": "protocol", "arg": "string" },
+    { "verb": "wipe", "noun": "folder", "arg": "string" },
+    { "verb": "copy", "noun": "file", "arg": "string" },
+    { "verb": "upload", "noun": "virus", "arg": "string", "arg_copula": "the" }
+  ],
+  "long": [
+    { "verb": "compromise", "noun": "user-account", "arg": "string" },
+  ]
+}

@@ -1,0 +1,418 @@
+{
+  "short": [
+    {
+      "verb": "Hack",
+      "noun": "mainframe"
+    },
+    {
+      "verb": "Upload",
+      "noun": "virus"
+    },
+    {
+      "verb": "Bypass",
+      "noun": "firewall"
+    },
+    {
+      "verb": "grant",
+      "noun": "access"
+    },
+    {
+      "verb": "Decrypt",
+      "noun": "codes"
+    },
+    {
+      "verb": "Engage",
+      "noun": "cyberstrike"
+    },
+    {
+      "verb": "Run",
+      "noun": "algorithm"
+    },
+    {
+      "verb": "Crack",
+      "noun": "encryption"
+    },
+    {
+      "verb": "Override",
+      "noun": "system"
+    },
+    {
+      "verb": "Launch",
+      "noun": "worm"
+    }
+  ],
+  "mid": [
+    { "verb": "hack",
+      "noun": "cupcake"
+    },
+    {
+      "verb": "poison",
+      "noun": "honeypot"
+    },
+    { "verb": "hack",
+      "noun": "planet"
+    },
+    {
+      "noun": "Cyberattack",
+      "verb": "initiate"
+    },
+    {
+      "verb": "Execute",
+      "noun": "payload"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "servers"
+    },
+    {
+      "verb": "Trigger",
+      "noun": "backdoor"
+    },
+    {
+      "verb": "Ping",
+      "noun": "network"
+    },
+    {
+      "verb": "Reboot",
+      "noun": "grid"
+    },
+    {
+      "verb": "Spam",
+      "noun": "uplink"
+    },
+    {
+      "verb": "Override",
+      "noun": "protocols"
+    },
+    {
+      "verb": "Fry",
+      "noun": "circuits"
+    },
+    {
+      "verb": "Jack",
+      "noun": "cyberspace"
+    },
+    {
+      "verb": "Ghost",
+      "noun": "signal"
+    },
+    {
+      "verb": "Trace",
+      "noun": "source"
+    },
+    {
+      "verb": "Loop",
+      "noun": "data"
+    },
+    {
+      "verb": "Clone",
+      "noun": "drive"
+    },
+    {
+      "verb": "Scramble",
+      "noun": "nodes"
+    },
+    {
+      "verb": "Inject",
+      "noun": "trojan"
+    },
+    {
+      "verb": "Bridge",
+      "noun": "nodes"
+    },
+    {
+      "verb": "Infiltrate",
+      "noun": "subnet"
+    },
+    {
+      "verb": "Disrupt",
+      "noun": "mainframe"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "uplink"
+    },
+    {
+      "verb": "Engage",
+      "noun": "worm"
+    },
+    {
+      "verb": "Overwrite",
+      "noun": "cache"
+    },
+    {
+      "verb": "Mirror",
+      "noun": "IP"
+    },
+    {
+      "verb": "Flood",
+      "noun": "router"
+    },
+    {
+      "verb": "Activate",
+      "noun": "proxy"
+    },
+    {
+      "verb": "Siphon",
+      "noun": "packets"
+    },
+    {
+      "verb": "Compile",
+      "noun": "script"
+    },
+    {
+      "verb": "Rewire",
+      "noun": "modem"
+    },
+    {
+      "verb": "Control",
+      "noun": "botnet"
+    }
+  ],
+  "long": [
+    {
+      "verb": "Engage",
+      "noun": "root access"
+    },
+    {
+      "verb": "Terminate",
+      "noun": "script"
+    },
+    {
+      "verb": "Disarm",
+      "noun": "defense"
+    },
+    {
+      "verb": "Encrypt",
+      "noun": "payload"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "protocol"
+    },
+    {
+      "verb": "Crash",
+      "noun": "network"
+    },
+    {
+      "verb": "Replicate",
+      "noun": "bug"
+    },
+    {
+      "verb": "Inject",
+      "noun": "malware"
+    },
+    {
+      "verb": "Fracture",
+      "noun": "system"
+    },
+    {
+      "verb": "Deploy",
+      "noun": "sniffer"
+    },
+    {
+      "verb": "Override",
+      "noun": "BIOS"
+    },
+    {
+      "verb": "Loop",
+      "noun": "feedback"
+    },
+    {
+      "verb": "Counter",
+      "noun": "attack"
+    },
+    {
+      "verb": "Launch",
+      "noun": "hack"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "node"
+    },
+    {
+      "verb": "Upload",
+      "noun": "payload"
+    },
+    {
+      "verb": "Trigger",
+      "noun": "loop"
+    },
+    {
+      "verb": "Engage",
+      "noun": "cybermode"
+    },
+    {
+      "verb": "Override",
+      "noun": "hub"
+    },
+    {
+      "verb": "Boot",
+      "noun": "exploit"
+    },
+    {
+      "verb": "Penetrate",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Break",
+      "noun": "code"
+    },
+    {
+      "verb": "Spike",
+      "noun": "signal"
+    },
+    {
+      "verb": "Lock",
+      "noun": "grid"
+    },
+    {
+      "verb": "Melt",
+      "noun": "core"
+    },
+    {
+      "verb": "Run",
+      "noun": "exploit"
+    },
+    {
+      "verb": "Hack",
+      "noun": "database"
+    },
+    {
+      "verb": "Scramble",
+      "noun": "virus"
+    },
+    {
+      "verb": "Activate",
+      "noun": "backdoor"
+    },
+    {
+      "verb": "Rip",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Override",
+      "noun": "gateway"
+    },
+    {
+      "verb": "Disarm",
+      "noun": "virus"
+    },
+    {
+      "verb": "Bridge",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Seize",
+      "noun": "server"
+    },
+    {
+      "verb": "Upload",
+      "noun": "worm"
+    },
+    {
+      "verb": "Engage",
+      "noun": "payload"
+    },
+    {
+      "verb": "Corrupt",
+      "noun": "database"
+    },
+    {
+      "verb": "Initiate",
+      "noun": "hack"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "cyberspace"
+    },
+    {
+      "verb": "Cloak",
+      "noun": "signal"
+    },
+    {
+      "verb": "Crash",
+      "noun": "mainframe"
+    },
+    {
+      "verb": "Mirror",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Unleash",
+      "noun": "botnet"
+    },
+    {
+      "verb": "Override",
+      "noun": "algorithm"
+    },
+    {
+      "verb": "Activate",
+      "noun": "cyberdrive"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Engage",
+      "noun": "backdoor"
+    },
+    {
+      "verb": "Replicate",
+      "noun": "malware"
+    },
+    {
+      "verb": "Scramble",
+      "noun": "signal"
+    },
+    {
+      "verb": "Deploy",
+      "noun": "worm"
+    },
+    {
+      "verb": "Flood",
+      "noun": "mainframe"
+    },
+    {
+      "verb": "Encrypt",
+      "noun": "data"
+    },
+    {
+      "verb": "Run",
+      "noun": "protocol"
+    },
+    {
+      "verb": "Hijack",
+      "noun": "grid"
+    },
+    {
+      "verb": "Infiltrate",
+      "noun": "network"
+    },
+    {
+      "verb": "Seize",
+      "noun": "modem"
+    },
+    {
+      "verb": "Upload",
+      "noun": "trojan"
+    },
+    {
+      "verb": "Override",
+      "noun": "network"
+    },
+    {
+      "verb": "Crash",
+      "noun": "firewall"
+    },
+    {
+      "verb": "Engage",
+      "noun": "cyberwarfare"
+    },
+    {
+      "verb": "Brute-force",
+      "noun": "password"
+    }
+  ]
+}
