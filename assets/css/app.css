@@ -3,3 +3,32 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+html,
+body {
+    @apply bg-black w-full h-full;
+}
+
+body > div {
+    @apply h-full w-full;
+}
+
+.cmd-display {
+    @apply flex-grow bg-stone-900 m-2 border border-amber-500;
+}
+
+input.terminal-input {
+    @apply bg-stone-900 caret-amber-400 outline-none flex-grow text-xl border-0;
+}
+
+input.terminal-input:focus {
+    @apply outline-none border-none ring-transparent;
+}
+
+.terminal-wrapper {
+    @apply flex align-middle m-2 bg-stone-900 border border-amber-500;
+}
+
+.terminal-wrapper::before {
+    @apply w-fit text-3xl p-1;
+    content: ">";
+}

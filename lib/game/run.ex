@@ -22,6 +22,10 @@ defmodule Game.Run do
     GenServer.call(__MODULE__, {:command, input})
   end
 
+  def get_state() do
+    GenServer.call(__MODULE__, :get_state)
+  end
+
   def stop() do
     GenServer.stop(__MODULE__)
   end
@@ -33,6 +37,10 @@ defmodule Game.Run do
     :timer.send_interval(@run_length, :tick)
 
     {:ok, %{init_state | finish_at: finish_time} |> set_new_target()}
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_call({:command, input}, _from, state) do
