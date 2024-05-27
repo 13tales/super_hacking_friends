@@ -20,6 +20,7 @@ defmodule SuperHackingFriendsWeb.Router do
     get "/", PageController, :home
 
     live "/game", GameLive
+    live "/lobby", LobbyLive
   end
 
   # Other scopes may use custom stacks.

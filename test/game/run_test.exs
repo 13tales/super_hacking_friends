@@ -188,7 +188,7 @@ defmodule Game.RunTest do
       player1 = state.players["player1"]
       target_tuple = {player1.target, "player1"}
 
-      assert Map.get(state.all_targets, ProcServer.format(player1.target)) == target_tuple
+      assert Map.get(state.all_targets, Proc.format(player1.target)) == target_tuple
 
       Run.stop(pid)
     end

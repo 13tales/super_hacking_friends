@@ -9,7 +9,9 @@ defmodule Game.Run do
               life: 100,
               finish_at: nil,
               all_targets: Map.new(),
-              all_commands: Map.new()
+              all_commands: Map.new(),
+              name: "",
+              procserver: nil
   end
 
   @reward 5
@@ -26,9 +28,10 @@ defmodule Game.Run do
   use GenServer
 
   # Interface
-  def new_game(%State{} = init_state \\ %State{}) do
-    ProcServer.start()
-    GenServer.start(__MODULE__, init_state)
+  def new_game(%State{ name: name } = init_state \\ %State{}) do
+
+    {:ok, pid} = ProcServer.start()
+    GenServer.start(__MODULE__, %State{ init_state | procserver: pid }, name: {:global, name})
   end
 
   def start_game(pid) do
@@ -101,8 +104,8 @@ defmodule Game.Run do
   end
 
   def handle_info({:proc_timeout, target}, %State{} = state) do
-    Logger.info("Timeout for target: #{ProcServer.format(target)}")
-    target_key = ProcServer.format(target)
+    Logger.info("Timeout for target: #{Proc.format(target)}")
+    target_key = Proc.format(target)
 
     case check_target_match(state, target_key) do
       {:match, owner, _old_target} ->
@@ -150,7 +153,7 @@ defmodule Game.Run do
   end
 
   # Deal random commands to all players, up to the hand limit
-  def deal_all(%State{} = state) do
+  def deal_all(%State{ procserver: procserver } = state) do
     new_players =
       for {name, data} <- state.players, into: %{} do
         {name,
@@ -158,8 +161,8 @@ defmodule Game.Run do
            data
            | commands:
                Map.new(1..@hand_limit, fn _ ->
-                 cmd = ProcServer.pick(@max_level)
-                 {ProcServer.format(cmd), cmd}
+                 cmd = ProcServer.pick(procserver, @max_level)
+                 {Proc.format(cmd), cmd}
                end)
          }}
       end
@@ -183,7 +186,7 @@ defmodule Game.Run do
     new_target_pool =
       Map.values(new_players)
       |> Enum.map(fn %Player{target: target, name: player_name} ->
-        {ProcServer.format(target), {target, player_name}}
+        {Proc.format(target), {target, player_name}}
       end)
       |> Map.new()
 
@@ -215,7 +218,7 @@ defmodule Game.Run do
     new_state =
       put_in(state, [key!(:players), player_name, key!(:target)], new_target)
       |> Map.update!(:all_targets, fn ts ->
-        Map.delete(ts, ProcServer.format(current_target))
+        Map.delete(ts, Proc.format(current_target))
         |> Map.put(new_key, {new_target, player_name})
       end)
 
@@ -227,7 +230,7 @@ defmodule Game.Run do
   # Check if a typed command matches a proc data structure
   def input_matches_proc(proc, input)
       when is_binary(input) do
-    target = ProcServer.format(proc)
+    target = Proc.format(proc)
 
     clean_input = input |> String.downcase() |> String.trim() |> String.replace("_", " ")
 
@@ -235,11 +238,11 @@ defmodule Game.Run do
   end
 
   # Replace a command belonging to a named player
-  def replace_player_command(%State{} = state, %Proc{} = command, player_name)
+  def replace_player_command(%State{ procserver: procserver } = state, %Proc{} = command, player_name)
       when is_map_key(state.players, player_name) do
-    current_key = ProcServer.format(command)
-    new_command = ProcServer.pick(@max_level)
-    new_key = ProcServer.format(new_command)
+    current_key = Proc.format(command)
+    new_command = ProcServer.pick(procserver, @max_level)
+    new_key = Proc.format(new_command)
 
     state
     |> update_in([Access.key!(:players), player_name, Access.key!(:commands)], fn cs ->

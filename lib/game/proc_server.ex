@@ -1,6 +1,19 @@
 defmodule Game.ProcServer do
   defmodule Proc do
     defstruct noun: "", verb: "", modifier: "", arg: nil
+
+    def format(%{} = proc, screen \\ false) do
+      "#{proc.verb} #{if screen do
+        "the "
+      else
+        ""
+      end}#{if Map.has_key?(proc, :modifier) do
+        proc.modifier <> " "
+      else
+        ""
+      end}#{proc.noun}"
+      |> String.downcase()
+    end
   end
 
   use GenServer
@@ -11,15 +24,15 @@ defmodule Game.ProcServer do
   # Interface
 
   def start() do
-    GenServer.start(__MODULE__, %{}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, %{})
   end
 
-  def stop() do
-    GenServer.stop(__MODULE__)
+  def stop(pid) do
+    GenServer.stop(pid)
   end
 
-  def pick(max_level) do
-    GenServer.call(__MODULE__, {:pick, max_level})
+  def pick(pid, max_level) do
+    GenServer.call(pid, {:pick, max_level})
   end
 
   # Callbacks
@@ -52,19 +65,6 @@ defmodule Game.ProcServer do
       false -> phrase
       true -> get_new(max_level, used)
     end
-  end
-
-  def format(%{} = proc, screen \\ false) do
-    "#{proc.verb} #{if screen do
-      "the "
-    else
-      ""
-    end}#{if Map.has_key?(proc, :modifier) do
-      proc.modifier <> " "
-    else
-      ""
-    end}#{proc.noun}"
-    |> String.downcase()
   end
 
   def generate(max_level) do
