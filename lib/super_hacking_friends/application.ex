@@ -12,6 +12,7 @@ defmodule SuperHackingFriends.Application do
       SuperHackingFriends.Repo,
       {DNSCluster, query: Application.get_env(:super_hacking_friends, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SuperHackingFriends.PubSub},
+      SuperHackingFriendsWeb.GamePresence,
       # Start the Finch HTTP client for sending emails
       {Finch, name: SuperHackingFriends.Finch},
       # Start a worker by calling: SuperHackingFriends.Worker.start_link(arg)
