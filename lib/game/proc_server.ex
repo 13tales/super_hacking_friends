@@ -13,6 +13,12 @@ defmodule Game.ProcServer do
         ""
       end}#{proc.noun}"
       |> String.downcase()
+      |> (fn str -> if screen, do: String.capitalize(str) <> "!", else: str end).()
+    end
+
+    # Catch-all to handle empty values
+    def format(nil, _) do
+      ""
     end
   end
 

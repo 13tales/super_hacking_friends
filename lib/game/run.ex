@@ -1,53 +1,56 @@
 defmodule Game.Run do
   defmodule Player do
-    defstruct name: "", commands: Map.new(), hits: 0, misses: 0, target: nil
+    defstruct name: "", commands: Map.new(), hits: 0, misses: 0, target: nil, host: false
   end
 
   defmodule State do
     defstruct players: %{},
-              running: false,
+              # :waiting, :running, :won, :lost
+              status: :waiting,
               life: 100,
               finish_at: nil,
               all_targets: Map.new(),
               all_commands: Map.new(),
               name: "",
-              procserver: nil
+              procserver: nil,
+              topic: nil
   end
 
   @reward 5
-  @damage 5
-  @command_interval :timer.seconds(6)
+  @damage 20
+  @command_interval :timer.seconds(10)
   @max_level 10
-  @run_length :timer.seconds(30)
+  @run_length :timer.seconds(120)
   @hand_limit 9
 
   require Logger
   import Access, only: [key!: 1]
+  alias Phoenix.PubSub
   alias Game.ProcServer.Proc
   alias Game.ProcServer
+  alias Game.Utils
   use GenServer
 
   # Interface
-  def new_game(%State{ name: name } = init_state \\ %State{}) do
-
+  def new_game(%State{name: name} = init_state \\ %State{}) do
     {:ok, pid} = ProcServer.start()
-    GenServer.start(__MODULE__, %State{ init_state | procserver: pid }, name: {:global, name})
+    GenServer.start(__MODULE__, %State{init_state | procserver: pid}, name: {:global, name})
   end
 
   def start_game(pid) do
     GenServer.call(pid, :start_game)
   end
 
-  def add_lobby_player(pid, name) do
-    GenServer.call(pid, {:add_player, name})
+  def add_lobby_player(pid, name, host \\ false) do
+    GenServer.call(pid, {:add_player, name, host})
   end
 
   def remove_lobby_player(pid, name) do
     GenServer.call(pid, {:remove_player, name})
   end
 
-  def command(pid, input) do
-    GenServer.call(pid, {:command, input})
+  def command(pid, input, player_name) do
+    GenServer.cast(pid, {:command, input, player_name})
   end
 
   def get_state(pid) do
@@ -60,46 +63,58 @@ defmodule Game.Run do
 
   # Callbacks
   def init(%State{} = init_state \\ %State{}) do
-    {:ok, init_state}
+    topic = Utils.get_topic(init_state.name)
+    PubSub.subscribe(SuperHackingFriends.PubSub, topic)
+
+    {:ok, %State{init_state | topic: topic}}
   end
 
-  def handle_call({:add_player, new_player}, _from, state) do
-    case add_player(state, new_player) do
+  def handle_call({:add_player, new_player, host}, _from, %State{} = state) do
+    case add_player(state, new_player, host) do
       {:ok, new_state} -> {:reply, {:ok, new_state}, new_state}
       {:err, reason} -> {:reply, {:err, reason}, state}
     end
   end
 
-  def handle_call({:remove_player, name}, _from, state) do
+  def handle_call({:remove_player, name}, _from, %State{} = state) do
     new_state = remove_player(state, name)
     {:reply, {:ok, new_state}, new_state}
   end
 
-  def handle_call(:start_game, _from, state) do
+  def handle_call(:start_game, _from, %State{} = state) do
     finish_time = DateTime.utc_now() |> DateTime.add(@run_length, :millisecond)
 
     new_state =
-      %{state | running: true, finish_at: finish_time}
+      %State{state | status: :running, finish_at: finish_time}
       |> deal_all()
       |> assign_all()
 
     :timer.send_interval(@run_length, :tick)
 
+    Logger.info("Starting game with name: #{state.name}")
+
+    # TODO: Replace with the generic broadcast message
+    PubSub.broadcast(
+      SuperHackingFriends.PubSub,
+      state.topic,
+      {:game_start, new_state}
+    )
+
     {:reply, {:ok, new_state}, new_state}
   end
 
-  def handle_call(:get_state, _from, state) do
+  def handle_call(:get_state, _from, %State{} = state) do
     {:reply, state, state}
   end
 
-  def handle_call({:command, input, player_name}, _from, state) do
+  def handle_cast({:command, input, player_name}, _from, %State{} = state) do
     case handle_input(state, player_name, input) do
       {_result, %State{life: 0} = new_state} ->
         Logger.info("Game over! Players lose!")
-        {:stop, :normal, :game_lost, new_state}
+        {:noreply, new_state |> broadcast_new_state}
 
       {result, new_state} ->
-        {:reply, result, new_state}
+        {:noreply, new_state |> broadcast_new_state}
     end
   end
 
@@ -107,53 +122,87 @@ defmodule Game.Run do
     Logger.info("Timeout for target: #{Proc.format(target)}")
     target_key = Proc.format(target)
 
-    case check_target_match(state, target_key) do
-      {:match, owner, _old_target} ->
-        state
-        |> damage(@damage)
-        |> assign_new_target(owner)
+    new_state =
+      case check_target_match(state, target_key) do
+        {:match, owner, _old_target} ->
+          state
+          |> damage(@damage)
+          |> assign_new_target(owner)
 
-      :nomatch ->
-        state
-    end
+        :nomatch ->
+          state
+      end
+
+    {:noreply, new_state |> broadcast_new_state}
   end
 
-  def handle_info(:tick, state) do
+  def handle_info(:tick, %State{} = state) do
     Logger.info("Tick")
 
-    if DateTime.after?(DateTime.utc_now(), state.finish_at) do
+    if DateTime.after?(DateTime.utc_now(), state.finish_at) && state.status == :running do
       IO.puts("You win! Life remaining: #{state.life}")
 
-      {:stop, :normal, state}
+      {:noreply, %State{state | status: :won} |> broadcast_new_state}
     else
       {:noreply, state}
     end
   end
 
+  def handle_info(
+        %{event: "presence_diff", payload: %{joins: _joins, leaves: leaves}},
+        %State{} = state
+      ) do
+    # new_state = Enum.reduce(leaves, state, fn {name, _}, acc -> remove_player(acc, name) end)
+
+    # Logger.info("Players updated. New state: #{inspect Map.values(new_state.players)}")
+    # if Enum.count(new_state.players) == 0 do
+    #   Logger.info("Stopping #{new_state.name} because last player left.")
+    #   {:stop, :normal, new_state}
+    # else
+    #   {:noreply, new_state}
+    # end
+    {:noreply, state}
+  end
+
+  def handle_info(:game_start, %State{} = state) do
+    {:noreply, state}
+  end
+
+  def handle_info(msg, %State{} = state) do
+    # Logger.warning("Unhandled message: #{inspect(msg)}")
+    {:noreply, state}
+  end
+
   # Game logic
 
+  def broadcast_new_state(%State{topic: topic} = state) do
+    PubSub.broadcast!(SuperHackingFriends.PubSub, topic, {:state_update, state})
+
+    state
+  end
+
   # Remove a player from the game
-  def remove_player(state, name) do
+  def remove_player(%State{} = state, name) do
     Map.update!(state, :players, &Map.delete(&1, name))
   end
 
   # Add a player to the game
-  def add_player(state, new_name) do
+  def add_player(%State{} = state, new_name, host \\ false) do
     case state do
-      %{running: false, players: players} when is_map_key(players, new_name) ->
+      %State{status: :running} ->
+        {:err, :in_progress}
+
+      %State{status: _, players: players} when is_map_key(players, new_name) ->
         {:err, :exists}
 
-      %{running: false} ->
-        new_state = put_in(state, [key!(:players), new_name], %Player{name: new_name})
+      %State{status: _} ->
+        new_state = put_in(state, [key!(:players), new_name], %Player{name: new_name, host: host})
         {:ok, new_state}
-
-      %{running: true} ->
-        {:err, :in_progress}
     end
   end
 
   # Deal random commands to all players, up to the hand limit
-  def deal_all(%State{ procserver: procserver } = state) do
+  def deal_all(%State{procserver: procserver} = state) do
     new_players =
       for {name, data} <- state.players, into: %{} do
         {name,
@@ -199,8 +248,19 @@ defmodule Game.Run do
   end
 
   # Subtract health
-  def damage(%State{} = state, hit) when is_integer(hit),
-    do: Map.update(state, :life, 0, &max(0, &1 - hit))
+  def damage(%State{} = state, hit) when is_integer(hit) do
+    new_life = max(0, state.life - hit)
+
+    status =
+      if new_life == 0 do
+        :lost
+      else
+        state.status
+      end
+
+    Logger.info("Damage taken: #{hit}, new life value: #{new_life}")
+    %State{state | life: new_life, status: status}
+  end
 
   # Increase health/score
   def score(%State{} = state, points) when is_integer(points),
@@ -238,7 +298,11 @@ defmodule Game.Run do
   end
 
   # Replace a command belonging to a named player
-  def replace_player_command(%State{ procserver: procserver } = state, %Proc{} = command, player_name)
+  def replace_player_command(
+        %State{procserver: procserver} = state,
+        %Proc{} = command,
+        player_name
+      )
       when is_map_key(state.players, player_name) do
     current_key = Proc.format(command)
     new_command = ProcServer.pick(procserver, @max_level)
@@ -277,11 +341,14 @@ defmodule Game.Run do
           |> replace_player_command(command, player_name)
           |> assign_new_target(owner)
 
+          Logger.info("Matched! New state: #{new_state}")
+
         {:match, new_state}
 
       :nomatch ->
         new_state = damage(state, @damage)
 
+        Logger.info("No match! New state: #{new_state}")
         {:nomatch, new_state}
     end
   end

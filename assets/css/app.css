@@ -3,22 +3,23 @@
 @import "tailwindcss/utilities";
 
 @font-face {
-    font-family: 'Ac437 IBM MDA';
-    src: url('/fonts/Ac437_IBM_MDA.ttf') format('truetype');
+    font-family: "Ac437 IBM MDA";
+    src: url("/fonts/Ac437_IBM_MDA.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
-	font-family: "Terminus";
-	src: url('/fonts/TerminusTTF-4.49.3.ttf') format('truetype');
+    font-family: "Terminus";
+    src: url("/fonts/TerminusTTF-4.49.3.ttf") format("truetype");
 }
 
 /* This file is for your main application CSS */
 html,
 body {
     @apply bg-black w-full h-full;
-    font-family: 'Terminus', monospace !important;
+    font-family: "Ac437 IBM MDA", monospace !important;
+    font-size: 18px;
 }
 
 body > div {
@@ -44,4 +45,24 @@ input.terminal-input:focus {
 .terminal-wrapper::before {
     @apply w-fit text-3xl p-1;
     content: ">";
+}
+
+.lobby {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: 1rem;
+}
+
+.player-list {
+    @apply border-2 border-amber-400 p-2 h-full;
+
+    display: grid;
+    grid-template-rows: fit-content(100%) 1fr fit-content(100%);
+}
+
+.commands {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 }
