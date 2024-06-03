@@ -107,7 +107,7 @@ defmodule Game.Run do
     {:reply, state, state}
   end
 
-  def handle_cast({:command, input, player_name}, _from, %State{} = state) do
+  def handle_cast({:command, input, player_name}, %State{} = state) do
     case handle_input(state, player_name, input) do
       {_result, %State{life: 0} = new_state} ->
         Logger.info("Game over! Players lose!")
@@ -118,7 +118,7 @@ defmodule Game.Run do
     end
   end
 
-  def handle_info({:proc_timeout, target}, %State{} = state) do
+  def handle_info({:proc_timeout, target}, %State{ status: :running } = state) do
     Logger.info("Timeout for target: #{Proc.format(target)}")
     target_key = Proc.format(target)
 
@@ -135,6 +135,13 @@ defmodule Game.Run do
 
     {:noreply, new_state |> broadcast_new_state}
   end
+
+  def handle_info({:proc_timeout, target}, %State{} = state) do
+    Logger.info("Ignoring timeout; game not running.")
+
+    {:noreply, state}
+  end
+
 
   def handle_info(:tick, %State{} = state) do
     Logger.info("Tick")
@@ -300,7 +307,7 @@ defmodule Game.Run do
   # Replace a command belonging to a named player
   def replace_player_command(
         %State{procserver: procserver} = state,
-        %Proc{} = command,
+        command,
         player_name
       )
       when is_map_key(state.players, player_name) do
@@ -308,13 +315,21 @@ defmodule Game.Run do
     new_command = ProcServer.pick(procserver, @max_level)
     new_key = Proc.format(new_command)
 
-    state
-    |> update_in([Access.key!(:players), player_name, Access.key!(:commands)], fn cs ->
-      cs |> Map.delete(current_key) |> Map.put(new_key, new_command)
-    end)
-    |> update_in([:all_commands], fn cs ->
-      cs |> Map.delete(current_key) |> Map.put(new_key, new_command)
-    end)
+    new_players =
+      state.players
+      |> Map.update!(player_name, fn player ->
+        new_commands = player.commands
+        |> Map.delete(current_key)
+        |> Map.put(new_key, new_command)
+        %{player | commands: new_commands}
+      end)
+
+    new_commands =
+      state.all_commands
+      |> Map.delete(current_key)
+      |> Map.put(new_key, new_command)
+
+    %{state | players: new_players, all_commands: new_commands}
   end
 
   # Check if a typed command matches *any* current target, and return the name of the player it belongs to
@@ -341,14 +356,14 @@ defmodule Game.Run do
           |> replace_player_command(command, player_name)
           |> assign_new_target(owner)
 
-          Logger.info("Matched! New state: #{new_state}")
+          Logger.info("Matched! New state: #{inspect new_state}")
 
         {:match, new_state}
 
       :nomatch ->
         new_state = damage(state, @damage)
 
-        Logger.info("No match! New state: #{new_state}")
+        Logger.info("No match! New state: #{inspect new_state}")
         {:nomatch, new_state}
     end
   end
