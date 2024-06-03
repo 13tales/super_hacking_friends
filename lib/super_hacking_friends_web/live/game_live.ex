@@ -41,7 +41,8 @@ defmodule SuperHackingFriendsWeb.GameLive do
        room_name: "",
        ready: false,
        target: nil,
-       commands: nil
+       commands: nil,
+       cmd_input: ""
      )}
   end
 
@@ -187,8 +188,16 @@ defmodule SuperHackingFriendsWeb.GameLive do
         %{assigns: %{game_pid: pid, player_name: player_name}} = socket
       ) do
     Run.command(pid, input, player_name)
-    {:noreply, socket}
+    {:noreply, assign(socket, cmd_input: "")}
   end
+
+  def handle_event(
+          "cmd-input",
+          %{"cmd" => cmd_input},
+          socket
+        ) do
+      {:noreply, assign(socket, cmd_input: cmd_input)}
+    end
 
   def render(assigns) do
     ~H"""
@@ -213,6 +222,7 @@ defmodule SuperHackingFriendsWeb.GameLive do
       id="game"
       target={@target}
       commands={@commands}
+      cmd_input={@cmd_input}
     />
     """
   end

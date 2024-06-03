@@ -7,11 +7,11 @@ defmodule SuperHackingFriendsWeb.Components.Game do
     ~H"""
     <div>
       <.header>Target</.header>
-      <.target proc={@target} />
+      <.target target={@target} />
       <.header>Commands</.header>
       <.commands commands={@commands} />
       <form class="terminal-wrapper" phx-submit="run-cmd">
-        <input name="cmd" class="terminal-input" />
+        <input name="cmd" class="terminal-input" phx-change="cmd-input" value={@cmd_input}/>
       </form>
     </div>
     """
@@ -20,8 +20,12 @@ defmodule SuperHackingFriendsWeb.Components.Game do
   attr :proc, :map, required: true
 
   def target(assigns) do
+    {proc, timeout} = assigns.target
+
     ~H"""
-    <div><%= Proc.format(@proc, true) %></div>
+    <div>
+      <span><%= Proc.format(proc, true) %></span>
+    </div>
     """
   end
 

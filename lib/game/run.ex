@@ -18,7 +18,7 @@ defmodule Game.Run do
 
   @reward 5
   @damage 20
-  @command_interval :timer.seconds(10)
+  @command_interval :timer.seconds(30)
   @max_level 10
   @run_length :timer.seconds(120)
   @hand_limit 9
@@ -235,7 +235,7 @@ defmodule Game.Run do
       players
       |> Enum.map(fn {name, data} ->
         {_, new_target} = Enum.random(all_commands)
-        {name, %{data | target: new_target}}
+        {name, %{data | target: {new_target, @command_interval}}}
       end)
       |> Map.new()
 
@@ -283,12 +283,15 @@ defmodule Game.Run do
     Logger.info("New target for #{player_name}: #{new_key}")
 
     new_state =
-      put_in(state, [key!(:players), player_name, key!(:target)], new_target)
-      |> Map.update!(:all_targets, fn ts ->
-        Map.delete(ts, Proc.format(current_target))
-        |> Map.put(new_key, {new_target, player_name})
-      end)
-
+      %State{
+        state
+        | players: Map.update!(state.players, player_name, fn player ->
+            %{player | target: {new_target, @command_interval}}
+          end),
+          all_targets: state.all_targets
+          |> Map.delete(Proc.format(current_target))
+          |> Map.put(new_key, {new_target, player_name})
+      }
     Process.send_after(self(), {:proc_timeout, new_target}, @command_interval)
 
     new_state
